@@ -8,13 +8,11 @@ import { StateProvider } from './Provider/context';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <React.StrictMode>
-        <NextUIProvider>
-            <StateProvider>
-                <App />
-            </StateProvider>
-        </NextUIProvider>
-    </React.StrictMode>
+    <NextUIProvider>
+        <StateProvider>
+            <App />
+        </StateProvider>
+    </NextUIProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -7,7 +7,7 @@ import { StateContext } from '../../Provider/context'
 import Game from './Game'
 
 
-const difficultly = ["Easy", "Medium", "High"]
+const difficultlyItem = ["Easy", "Medium", "High"]
 const DragonTower = () => {
     const mode = ["Manual", "Auto"]
     const { demoCoin, selectMode, setSelectMode } = useContext(StateContext)
@@ -16,7 +16,7 @@ const DragonTower = () => {
             <div className='flex gap-x-3 mx-auto text-2xl'>
                 <Chip size='lg' color="warning" variant="light" className='font-sans text-xl' endContent={<img src={dolarIcon} alt='Dollar İcon' />}>Demo Coin : {demoCoin}  </Chip>
             </div>
-            <div className='w-full flex border  h-full   '>
+            <div className='w-full flex border-4 rounded-r-3xl border-gray-600 h-full   '>
                 <div className=' w-1/4 h-full bg-gray-600 p-2 flex flex-col gap-y-5'>
                     <div className='bg-gray-900 rounded-full flex justify-between p-2 w-full text-black '>
                         {mode.map((item, index) => (
@@ -25,9 +25,9 @@ const DragonTower = () => {
                         ))}
                     </div>
                     {selectMode === "Manual" ?
-                        <ManualConfig difficultly={difficultly} />
+                        <ManualConfig difficultlyItem={difficultlyItem} />
                         :
-                        <AutoConfig difficultly={difficultly} />
+                        <AutoConfig difficultlyItem={difficultlyItem} />
 
                     }
                 </div>

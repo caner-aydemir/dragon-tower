@@ -2,7 +2,7 @@ import React from 'react'
 import { Autocomplete, AutocompleteItem, Button, Input } from '@nextui-org/react'
 import dolarIcon from "../icon/dolarIcon.svg"
 
-const AutoConfig = ({ difficultly }) => {
+const AutoConfig = ({ difficultlyItem }) => {
     return (
         <div className='flex flex-col w-full gap-y-5 '>
             <div className="flex flex-col w-full flex-wrap md:flex-nowrap ">
@@ -26,7 +26,7 @@ const AutoConfig = ({ difficultly }) => {
                     className="max-w-xs font-sans"
                     color='default'
                 >
-                    {difficultly.map((item, index) => (
+                    {difficultlyItem.map((item, index) => (
                         <AutocompleteItem key={index} value={item}>
                             {item}
                         </AutocompleteItem>
