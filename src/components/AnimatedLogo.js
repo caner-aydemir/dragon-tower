@@ -24,7 +24,6 @@ const AnimatedLogo = ({ text,
             },
         },
     };
-
     useEffect(() => {
         let timeout;
         const show = () => {
