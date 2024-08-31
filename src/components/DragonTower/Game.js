@@ -1,93 +1,48 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { StateContext } from '../../Provider/context';
 import GameOverModal from '../Modal/GameOverModal';
+import dragon from "../icon/dragon.svg"
+import dragonEgg from "../icon/dragonEgg.svg"
+import { motion } from 'framer-motion';
+import MaxWinModal from "../Modal/MaxWinModal";
 
 const Table = () => {
+    const { selectMode, isStart, gameOver,
+        betAmount, setGameOver, setDemoCoin, gameDifficulty, selectedDifficultly,
+        setGameDifficultly,totalEarnings, setTotalEarnings,refreshTable , setRefreshTable,
+        multiplierChain,selectCol,playAutoMode,selected,setSelected,setTableData,tableData,generateRandomRow,autoMode,setAutoMode, setMultiplierChain,maxWinModal, setMaxWinModal} = useContext(StateContext);
 
-    const { selectMode, isStart, gameOver, setGameOver } = useContext(StateContext)
-    const GameMode = {
-        EASY: 'easy',
-        MEDIUM: 'medium',
-        HIGH: 'high',
-    };
 
-    const generateRandomRow = (columns, mode) => {
-        let numYumurtas, numDragons;
-
-        switch (mode) {
-            case GameMode.EASY:
-                numYumurtas = Math.floor(columns * 0.75);
-                numDragons = columns - numYumurtas;
-                break;
-            case GameMode.MEDIUM:
-                numYumurtas = Math.floor(columns / 2);
-                numDragons = columns - numYumurtas;
-                break;
-            case GameMode.HIGH:
-                numDragons = Math.floor(columns * 0.75);
-                numYumurtas = columns - numDragons;
-                break;
-            default:
-                numYumurtas = Math.floor(columns / 2);
-                numDragons = columns - numYumurtas;
-        }
-
-        const row = Array.from({ length: columns }, (_, i) => {
-            if (i < numYumurtas) return "yumurta";
-            return 'dragon';
-        });
-
-        return shuffleArray(row);
-    };
-
-    const shuffleArray = (array) => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    };
-
-    const rows = 9;
-    const columns = 4;
-    const [mode, setMode] = useState(GameMode.EASY);
-    const [tableData, setTableData] = useState([]);
-    const [selected, setSelected] = useState({}); // { rowIndex: colIndex }
 
     useEffect(() => {
-        const data = Array.from({ length: rows }, () => generateRandomRow(columns, mode));
+        const data = Array.from({ length: 9 }, () => generateRandomRow(4, selectedDifficultly));
         setTableData(data);
-    }, [mode]);
+        setMultiplierChain(1); // Oyun başladığında multiplier zincirini sıfırla
+    }, [refreshTable]);
 
-    const selectCol = (rowIndex, colIndex, text) => {
-        if (text === "dragon") {
-            setGameOver(true);
-
+    useEffect(() => {
+        let timer;
+        if (autoMode && !gameOver) {
+            timer = setInterval(() => {
+                playAutoMode()
+            }, 1200);
         }
-        if (!isStart)
-            return
-        if (rowIndex !== 8 && selected[rowIndex + 1] === undefined)
-            return
-        if (selected[rowIndex])
-            return
-        setSelected(prev => ({
-            ...prev,
-            [rowIndex]: colIndex
-        }));
-        console.log(selected)
+        return () => clearInterval(timer);
+    }, [selected,autoMode]);
 
-    };
+
+
 
     return (
         <div>
+
             <div className='w-1/2 flex justify-center items-center mx-auto h-full'>
                 <div className='w-full flex flex-col p-2 gap-3 border-8 border-gray-700 shadow-2xl'>
-                    {tableData.map((row, rowIndex) => (
+                    {tableData.map(({ row, multiplier }, rowIndex) => (
                         <div key={rowIndex} className='w-full flex gap-2'>
                             {row.map((cell, colIndex) => {
                                 // Koşullara göre buton rengi belirleniyor
                                 let buttonColor = 'bg-gray-700';
-                                let cursor = ""
                                 if (isStart) {
                                     if (rowIndex === 8 && selected[rowIndex] === undefined) {
                                         buttonColor = 'bg-green-500';
@@ -100,11 +55,26 @@ const Table = () => {
 
                                 return (
                                     <button
+                                        disabled={!isStart || autoMode}
                                         key={colIndex}
-                                        onClick={() => selectCol(rowIndex, colIndex, cell)}
-                                        className={`w-full h-12 flex ${buttonColor} rounded-md items-center justify-center ${!isStart && "hover:cursor-not-allowed"}`}
+                                        draggable={false}  // Bu satırı ekleyin
+                                        onDragStart={(e) => e.preventDefault()}  // Bu satırı ekleyin
+
+                                        onClick={() => selectCol(rowIndex, colIndex, cell, multiplier)}
+                                        className={`w-full h-12 flex 
+                                        ${(cell === dragonEgg && selected[rowIndex] === colIndex) && "bg-slate-500 border-2 "}
+                                        ${(cell === dragon && selected[rowIndex] === colIndex) && "bg-white border-4 border-red-700 "}
+                                        ${buttonColor} rounded-md items-center justify-center ${!isStart || autoMode && "hover:cursor-not-allowed"}`}
                                     >
-                                        <span className={`${selected[rowIndex] !== colIndex && 'hidden'}`}>{cell}</span>
+                                        <motion.img
+                                            src={cell}
+                                            alt="cell"
+                                            onDragStart={(e) => e.preventDefault()}  // Bu satırı ekleyin
+                                            className={`w-24 h-24  ${selected[rowIndex] !== colIndex ? '' : 'opacity-0'}`}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: selected[rowIndex] !== colIndex ? 0 : 1, scale: selected[rowIndex] !== colIndex ? 1 : 0.8 }}
+                                            transition={{ duration: 0.5 }}
+                                        />
                                     </button>
                                 );
                             })}
@@ -112,8 +82,8 @@ const Table = () => {
                     ))}
                 </div>
             </div>
-            {gameOver && <GameOverModal selected={selected} setSelected={setSelected} />}
-
+            {gameOver && <GameOverModal  />}
+            {maxWinModal && <MaxWinModal  />}
         </div>
     );
 };

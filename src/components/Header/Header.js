@@ -8,7 +8,7 @@ const Header = () => {
             <div className='w-5/6 flex items-center  justify-between '>
                 <AnimatedLogo
                     el="h2"
-                    text="Dragon Game"
+                    text="Dragon Tower"
 
                     className="text-4xl font-semibold"
                     repeatDelay={2000}
