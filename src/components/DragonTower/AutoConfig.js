@@ -1,15 +1,16 @@
 import React, {useContext, useState} from 'react'
-import { Autocomplete, AutocompleteItem, Button, Input } from '@nextui-org/react'
+import {Autocomplete, AutocompleteItem, Button, Input, Select, SelectItem} from '@nextui-org/react'
 import dolarIcon from "../icon/dolarIcon.svg"
 import {StateContext} from "../../Provider/context";
 
 const AutoConfig = () => {
     const { demoCoin, selectMode, setSelectMode,selectedDifficultly,
-        refreshTable , setRefreshTable,
+        refreshTable , setRefreshTable,setNumberOfBets,
         multiplierChain,gameDifficulty ,
         setAutoMode,
         autoMode,
-        setGameDifficultly, setSelectedDifficulty, isStart, setIsStart, betAmount, setBetAmount, setDifficultly, difficultly } = useContext(StateContext)
+        setGameDifficultly, setSelectedDifficulty, isStart,
+        setIsStart, betAmount, setBetAmount, setDifficultly, difficultly} = useContext(StateContext)
     const [amountError, setAmountError] = useState(false)
 
     const [difficultlyError, setDifficultlyError] = useState(false)
@@ -22,6 +23,12 @@ const AutoConfig = () => {
         setAutoMode(!autoMode);
         setIsStart(!isStart)
     };
+    const difficult = [
+        {key: "easy", label: "Easy"},
+        {key: "medium", label: "Medium"},
+        {key: "hard", label: "Hard"},
+
+    ];
     return (
         <div className='flex flex-col w-full gap-y-5 '>
             <div className="flex flex-col w-full flex-wrap md:flex-nowrap ">
@@ -41,33 +48,28 @@ const AutoConfig = () => {
             </div>
             <div className="flex flex-col w-full flex-wrap md:flex-nowrap">
                 <p>Difficulty</p>
-                <Autocomplete
-                    isReadOnly={isStart}
-                    defaultItems={Object.values(gameDifficulty)}
-                    color="success"
-                    defaultSelectedKey={gameDifficulty.EASY}
-                    isInvalid={difficultlyError}
-                    errorMessage="Please enter the difficulty level"
-                    aria-label="Select Difficulty"
-                    aria-labelledby="difficulty-select"
-                    className="max-w-xs text-4xl"
+                <Select
+                    defaultSelectedKeys={["easy"]}
+                    className="max-w-xs"
+                    color={"success"}
                 >
-                    {Object.values(gameDifficulty).map((item, index) => (
-                        <AutocompleteItem key={index} value={item} onClick={() => handleDifficultyChange(item)}>
-                            {item}
-                        </AutocompleteItem>
+                    {difficult.map((diff) => (
+                        <SelectItem key={diff.key} onClick={() => handleDifficultyChange(diff.label)}
+                        >
+                            {diff.label}
+                        </SelectItem>
                     ))}
-                </Autocomplete>
+                </Select>
             </div>
             <div className="flex flex-col w-full flex-wrap md:flex-nowrap ">
                 <p>Number of Bets</p>
                 <Input
                     type="number"
+                    onChange={(e)=>setNumberOfBets(e.target.value)}
                     placeholder="0"
                     variant='flat'
                     className='font-sans'
                 />
-
             </div>
             <Button color="success" size='lg' onClick={toggleAutoMode}>
                 Checkout

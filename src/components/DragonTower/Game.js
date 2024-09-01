@@ -10,7 +10,8 @@ const Table = () => {
     const { selectMode, isStart, gameOver,
         betAmount, setGameOver, setDemoCoin, gameDifficulty, selectedDifficultly,
         setGameDifficultly,totalEarnings, setTotalEarnings,refreshTable , setRefreshTable,
-        multiplierChain,selectCol,playAutoMode,selected,setSelected,setTableData,tableData,generateRandomRow,autoMode,setAutoMode, setMultiplierChain,maxWinModal, setMaxWinModal} = useContext(StateContext);
+        multiplierChain,selectCol,playAutoMode,
+        currentBet,numberOfBets,selected,setSelected,setTableData,tableData,generateRandomRow,autoMode,setAutoMode, setMultiplierChain,maxWinModal, setMaxWinModal} = useContext(StateContext);
 
 
 
@@ -22,10 +23,10 @@ const Table = () => {
 
     useEffect(() => {
         let timer;
-        if (autoMode && !gameOver) {
+        if (autoMode && !gameOver ){
             timer = setInterval(() => {
                 playAutoMode()
-            }, 1200);
+            }, 1000);
         }
         return () => clearInterval(timer);
     }, [selected,autoMode]);
@@ -36,7 +37,7 @@ const Table = () => {
     return (
         <div>
 
-            <div className='w-1/2 flex justify-center items-center mx-auto h-full'>
+            <div className='w-1/2 xs:w-full flex justify-center items-center mx-auto h-full'>
                 <div className='w-full flex flex-col p-2 gap-3 border-8 border-gray-700 shadow-2xl'>
                     {tableData.map(({ row, multiplier }, rowIndex) => (
                         <div key={rowIndex} className='w-full flex gap-2'>
@@ -61,16 +62,16 @@ const Table = () => {
                                         onDragStart={(e) => e.preventDefault()}  // Bu satırı ekleyin
 
                                         onClick={() => selectCol(rowIndex, colIndex, cell, multiplier)}
-                                        className={`w-full h-12 flex 
+                                        className={`w-full h-12 xs:h-10 flex 
                                         ${(cell === dragonEgg && selected[rowIndex] === colIndex) && "bg-slate-500 border-2 "}
                                         ${(cell === dragon && selected[rowIndex] === colIndex) && "bg-white border-4 border-red-700 "}
-                                        ${buttonColor} rounded-md items-center justify-center ${!isStart || autoMode && "hover:cursor-not-allowed"}`}
+                                        ${buttonColor} rounded-md items-center justify-center ${!isStart && "hover:cursor-not-allowed "}`}
                                     >
                                         <motion.img
                                             src={cell}
                                             alt="cell"
                                             onDragStart={(e) => e.preventDefault()}  // Bu satırı ekleyin
-                                            className={`w-24 h-24  ${selected[rowIndex] !== colIndex ? '' : 'opacity-0'}`}
+                                            className={`w-24 h-24 xs:w-16 xs:h-16  ${selected[rowIndex] !== colIndex ? '' : 'opacity-0'}`}
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: selected[rowIndex] !== colIndex ? 0 : 1, scale: selected[rowIndex] !== colIndex ? 1 : 0.8 }}
                                             transition={{ duration: 0.5 }}

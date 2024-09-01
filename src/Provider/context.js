@@ -30,9 +30,8 @@ export const StateProvider = ({ children }) => {
     const rows = 9;
     const columns = 4;
     const [tableData, setTableData] = useState([]);
-
+    const [openSettings , setOpenSettings] = useState(false)
     const selectCol = (rowIndex, colIndex, cell, multiplier) => {
-        console.log(rowIndex)
         if (rowIndex === tableData.length - 1) {
             setDemoCoin((prev) => prev - betAmount);
         }
@@ -65,13 +64,18 @@ export const StateProvider = ({ children }) => {
             console.log("MAX WIN");
             setMaxWinModal(!maxWinModal);
         }
-        console.log("selected" , selected)
+
     };
     const playAutoMode = async()  => {
-        for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+
+
+            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
                 const colIndex = Math.floor(Math.random() * columns);
                 await selectCol(rowIndex, colIndex, tableData[rowIndex].row[colIndex], tableData[rowIndex].multiplier);
-        }
+            }
+
+
+
     };
 
     const shuffleArray = (array) => {
@@ -85,7 +89,6 @@ export const StateProvider = ({ children }) => {
 
     const generateRandomRow = (columns, selectedDifficultly) => {
         let numYumurtas, numDragons, multiplier;
-        console.log("selectedDifficultly", selectedDifficultly);
         switch (selectedDifficultly) {
             case gameDifficulty.EASY:
                 numYumurtas = Math.floor(columns * 0.75);
@@ -131,7 +134,7 @@ export const StateProvider = ({ children }) => {
             tableData, setTableData,generateRandomRow,
             numberOfBets, setNumberOfBets,
             currentBet, setCurrentBet,
-            selectCol,selected,setSelected
+            selectCol,selected,setSelected,openSettings , setOpenSettings
         }}>
             {children}
         </StateContext.Provider>

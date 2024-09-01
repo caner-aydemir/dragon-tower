@@ -7,7 +7,8 @@ import { GiGlassCelebration } from "react-icons/gi";
 
 const GameOverModal = () => {
     const { gameOver, setGameOver, setIsStart ,demoCoin,
-        multiplierChain, setMultiplierChain,selected, setSelected,setDemoCoin,betAmount,selectedDifficultly,totalEarnings, setTotalEarnings,maxWinModal,gameDifficulty,setMaxWinModal} = useContext(StateContext)
+        multiplierChain, setMultiplierChain,selected,setOpenSettings,
+        openSettings, setSelected,setDemoCoin,betAmount,selectedDifficultly,totalEarnings, setTotalEarnings,maxWinModal,gameDifficulty,setMaxWinModal} = useContext(StateContext)
     let earnings = betAmount * multiplierChain;
     let maxWinMultiplier;
     const close = () => {
@@ -32,8 +33,9 @@ const GameOverModal = () => {
         setDemoCoin((prev) => prev + earnings*maxWinMultiplier);
         setMultiplierChain(1)
         setTotalEarnings(0)
+        setOpenSettings(!openSettings)
+
     }
-    console.log(selectedDifficultly)
     return (
         <Modal
             size="xs"
