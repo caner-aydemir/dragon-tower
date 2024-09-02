@@ -7,36 +7,34 @@ import { motion } from 'framer-motion';
 import MaxWinModal from "../Modal/MaxWinModal";
 
 const Table = () => {
-    const { selectMode, isStart, gameOver,
-        betAmount, setGameOver, setDemoCoin, gameDifficulty, selectedDifficultly,
-        setGameDifficultly,totalEarnings, setTotalEarnings,refreshTable , setRefreshTable,
-        multiplierChain,selectCol,playAutoMode,
-        currentBet,numberOfBets,selected,setSelected,setTableData,tableData,generateRandomRow,autoMode,setAutoMode, setMultiplierChain,maxWinModal, setMaxWinModal} = useContext(StateContext);
+    const {isStart, gameOver,selectedDifficultly, refreshTable ,selectCol,playAutoMode,
+      selected,setTableData,tableData,generateRandomRow,autoMode, setMultiplierChain,maxWinModal} = useContext(StateContext);
 
 
 
     useEffect(() => {
-        const data = Array.from({ length: 9 }, () => generateRandomRow(4, selectedDifficultly));
-        setTableData(data);
-        setMultiplierChain(1); // Oyun başladığında multiplier zincirini sıfırla
-    }, [refreshTable]);
+        if (!isStart) {
+            const data = Array.from({ length: 9 }, () => generateRandomRow(4, selectedDifficultly));
+            setTableData(data);
+            setMultiplierChain(1); // Oyun başladığında multiplier zincirini sıfırla
+        }
+    }, [refreshTable, isStart]);
 
     useEffect(() => {
         let timer;
-        if (autoMode && !gameOver ){
+        if (autoMode === true && !gameOver ){
             timer = setInterval(() => {
                 playAutoMode()
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [selected,autoMode]);
+    }, [selected, autoMode, gameOver]);
 
 
 
 
     return (
         <div>
-
             <div className='w-1/2 xs:w-full flex justify-center items-center mx-auto h-full'>
                 <div className='w-full flex flex-col p-2 gap-3 border-8 border-gray-700 shadow-2xl'>
                     {tableData.map(({ row, multiplier }, rowIndex) => (

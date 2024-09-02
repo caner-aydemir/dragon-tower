@@ -1,17 +1,12 @@
 import React, { createContext, useState, useEffect } from "react";
 import dragonEgg from "../components/icon/dragonEgg.svg";
 import dragon from "../components/icon/dragon.svg";
-
-
-
 export const StateContext = createContext();
-
 export const StateProvider = ({ children }) => {
     const [demoCoin, setDemoCoin] = useState(10000)
     const [selectMode, setSelectMode] = useState("Manual")
     const [betAmount, setBetAmount] = useState(0)
     const [isStart, setIsStart] = useState(false)
-    const [selectedDifficultly, setSelectedDifficulty] = useState(null)
     const [gameOver, setGameOver] = useState(false);
     const [maxWinModal, setMaxWinModal] = useState(false);
     const [gameDifficulty, setGameDifficulty] = useState({
@@ -19,63 +14,127 @@ export const StateProvider = ({ children }) => {
         MEDIUM: 'Medium',
         HARD: 'Hard',
     });
-    const [refreshTable , setRefreshTable] = useState(false)
-    const [multiplierChain, setMultiplierChain] = useState(1); // Multiplier çarpanlarını zincir halinde saklamak için state
-    const [autoMode, setAutoMode] = useState(false); // Auto mode state
+    const [selectedDifficultly, setSelectedDifficulty] = useState(gameDifficulty.EASY)
 
-    const [selected, setSelected] = useState({}); // { rowIndex: colIndex }
+    const [refreshTable , setRefreshTable] = useState(false)
+    const [multiplierChain, setMultiplierChain] = useState(1);
+    const [autoMode, setAutoMode] = useState(false);
+
+    const [selected, setSelected] = useState({});
     const [numberOfBets, setNumberOfBets] = useState(0);
     const [currentBet, setCurrentBet] = useState(0);
     const [totalEarnings, setTotalEarnings] = useState(0)
     const rows = 9;
     const columns = 4;
     const [tableData, setTableData] = useState([]);
-    const [openSettings , setOpenSettings] = useState(false)
-    const selectCol = (rowIndex, colIndex, cell, multiplier) => {
-        if (rowIndex === tableData.length - 1) {
+    const [openSettings , setOpenSettings] = useState(true)
+    const [numberOfBetsError , setNumberOfBetsError] = useState(false)
+    const [autoModeMultiWin,setAutoModeMultiWin] = useState(0)
+    const selectCol = async (rowIndex, colIndex, cell, multiplier) => {
+        if (!isStart || isInvalidSelection(rowIndex)) return;
+
+        await updateSelected(rowIndex, colIndex);
+
+        if(rowIndex === tableData.length - 1)
+        {
             setDemoCoin((prev) => prev - betAmount);
         }
-        if (!isStart) return;
-        if (rowIndex !== 8 && selected[rowIndex + 1] === undefined) return;
-        if (selected[rowIndex]) return;
-        setSelected((prev) => ({
-            ...prev,
-            [rowIndex]: colIndex
-        }));
-        if (rowIndex === tableData.length - 1 && cell === dragon) {
-            setAutoMode(false); // Auto mode'u durdur
-            setGameOver(true);
-            setMultiplierChain(0);
-            return;
-        }
-
-        if (cell !== dragon) {
-            setMultiplierChain((prev) => prev * multiplier);
-        }
-
 
         if (cell === dragon) {
-            setAutoMode(false); // Auto mode'u durdur
-            setGameOver(true);
-            setDemoCoin((prev) => prev + totalEarnings); // Oyun bitince kazancı demoCoine ekle
-            return;
-        }
-        if(rowIndex === 0) {
-            console.log("MAX WIN");
-            setMaxWinModal(!maxWinModal);
-        }
+            await handleGameOver(rowIndex);
+        } else {
+            updateMultiplierChain(multiplier);
 
+            if (isFirstRow(rowIndex)) {
+                await handleFirstRowSelection();
+            }
+        }
+    };
+
+    const isInvalidSelection = (rowIndex) => {
+        return (rowIndex !== 8 && selected[rowIndex + 1] === undefined) || selected[rowIndex];
+    };
+
+    const updateSelected = async (rowIndex, colIndex) => {
+        await setSelected((prev) => ({
+            ...prev,
+            [rowIndex]: colIndex,
+        }));
+    };
+    const handleGameOver = async (rowIndex) => {
+        if (selectMode === "Manual") {
+            endManualGame(rowIndex);
+        } else if (selectMode === "Auto") {
+            await handleAutoMode();
+        }
+    };
+    const endManualGame = (rowIndex) => {
+        const earnings = betAmount * multiplierChain;
+        setGameOver(true);
+        setDemoCoin((prev) => prev + earnings);
+        if(rowIndex === tableData.length - 1){
+            setMultiplierChain(0);
+
+        }
+    };
+
+    const handleAutoMode = async () => {
+        setCurrentBet((prevState) => prevState + 1);
+
+        if (currentBet < numberOfBets -1) {
+            await resetForNextAutoBet();
+        } else {
+            endAutoModeGame();
+        }
+    };
+
+    const resetForNextAutoBet = async () => {
+        await setSelected({});
+        setMultiplierChain(1);
+        const earnings = betAmount * multiplierChain;
+        setAutoModeMultiWin((prevState) => prevState + earnings);
+    };
+
+    const endAutoModeGame = () => {
+        setIsStart(false);
+        setAutoMode(false);
+        setGameOver(true);
+        setDemoCoin((prev) => prev + autoModeMultiWin);
+    };
+
+    const updateMultiplierChain = (multiplier) => {
+        setMultiplierChain((prev) => prev * multiplier);
+    };
+
+    const isFirstRow = (rowIndex) => {
+        return rowIndex === 0;
+    };
+
+    const handleFirstRowSelection = async () => {
+        setMaxWinModal(!maxWinModal);
+        const earnings = betAmount * multiplierChain;
+        const maxWinMultiplier = getMaxWinMultiplier();
+        setAutoModeMultiWin(earnings * maxWinMultiplier);
+        setDemoCoin((prev) => prev + earnings * maxWinMultiplier);
+    };
+
+    const getMaxWinMultiplier = () => {
+        switch (selectedDifficultly) {
+            case "Easy":
+                return 5;
+            case "Medium":
+                return 49;
+            case "High":
+                return 99;
+            default:
+                return 1;
+        }
     };
     const playAutoMode = async()  => {
-
-
             for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
                 const colIndex = Math.floor(Math.random() * columns);
                 await selectCol(rowIndex, colIndex, tableData[rowIndex].row[colIndex], tableData[rowIndex].multiplier);
             }
-
-
-
     };
 
     const shuffleArray = (array) => {
@@ -134,7 +193,9 @@ export const StateProvider = ({ children }) => {
             tableData, setTableData,generateRandomRow,
             numberOfBets, setNumberOfBets,
             currentBet, setCurrentBet,
-            selectCol,selected,setSelected,openSettings , setOpenSettings
+            selectCol,selected,setSelected,openSettings , setOpenSettings,
+            numberOfBetsError,
+            setNumberOfBetsError,autoModeMultiWin,setAutoModeMultiWin
         }}>
             {children}
         </StateContext.Provider>
