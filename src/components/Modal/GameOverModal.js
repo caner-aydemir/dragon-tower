@@ -28,7 +28,6 @@ const GameOverModal = () => {
         setOpenSettings(false);
         setAutoMode(false);
         setCurrentBet(0);
-        setNumberOfBets(0);
         setOpenSettings(!openSettings)
     }
 
