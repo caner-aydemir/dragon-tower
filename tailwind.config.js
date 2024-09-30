@@ -9,15 +9,16 @@ module.exports = {
 
   ], theme: {
     screens: {
-      xs: {max: '897px'}, // Mobile (iPhone 3 - iPhone XS Max).
-      md: {min: '898px', max: '1199px'}, // Tablet (matches max: iPad Pro @ 1112px).
-      lg: {min: '1200px ' }, // Desktop smallest.
-      xl:{min:`1900px`}
+      xs: { max: '897px' }, // Mobile (iPhone 3 - iPhone XS Max).
+      md: { min: '898px', max: '1199px' }, // Tablet (matches max: iPad Pro @ 1112px).
+      lg: { min: '1200px ' }, // Desktop smallest.
+      xl: { min: `1900px` }
     },
     extend: {
     },
   },
   darkMode: "class",
-  plugins: [nextui()],
+  plugins: [nextui(
+  )],
 }
 

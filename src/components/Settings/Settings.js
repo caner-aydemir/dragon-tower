@@ -44,6 +44,8 @@ const Settings = () => {
     const handleDifficultyChange = (difficulty) => {
         setSelectedDifficulty(difficulty);
         setDifficultlyError(false);
+        setRefreshTable(!refreshTable);
+
     };
 
     const startAutoMode = () => {
@@ -88,7 +90,10 @@ const Settings = () => {
     const difficulties = [
         { key: 'easy', label: 'Easy' },
         { key: 'medium', label: 'Medium' },
-        { key: 'hard', label: 'Hard' }
+        { key: 'hard', label: 'Hard' },
+        { key: 'expert', label: 'Expert' },
+        { key: 'master', label: 'Master' },
+
     ];
 
     return (
@@ -99,10 +104,12 @@ const Settings = () => {
                     type="number"
                     placeholder="0"
                     variant='flat'
+                    isReadOnly={isStart}
+                    value={betAmount === 0 ? "" : betAmount}
                     inputMode="numeric"
                     isInvalid={amountError}
                     errorMessage="Please enter a coin greater than 1"
-                    onChange={(e) => setBetAmount(e.target.value)}
+                    onChange={(e) => setBetAmount(Number(e.target.value))}
                     labelPlacement="outside"
                     className='font-sans'
                     endContent={<img src={dolarIcon} alt='Dollar Icon' />}
@@ -113,11 +120,13 @@ const Settings = () => {
                 <Select
                     defaultSelectedKeys={["easy"]}
                     className="max-w-xs"
+                    isReadOnly={isStart}
                     color="success"
                 >
                     {difficulties.map((difficulty) => (
                         <SelectItem
                             key={difficulty.key}
+                            isReadOnly={isStart}
                             onClick={() => handleDifficultyChange(difficulty.label)}
                         >
                             {difficulty.label}
@@ -126,11 +135,13 @@ const Settings = () => {
                 </Select>
             </div>
             {multiplierChain !== 1 && (
+
                 <Input
                     size="md"
                     value="Multiplier"
                     color="success"
-                    endContent={multiplierChain}
+                    endContent={parseFloat(multiplierChain?.toFixed(2))}
+
                 />
             )}
             <Button

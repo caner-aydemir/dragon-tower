@@ -6,34 +6,41 @@ import useIsMobileDevice from "../../libs/responsive";
 
 
 const GameOverModal = () => {
-    const { gameOver, setGameOver, setIsStart ,
-        multiplierChain, setMultiplierChain,openSettings,setOpenSettings,
-       setAutoMode,setSelected,
-        setDemoCoin,betAmount,
+    const { gameOver, setGameOver, setIsStart,
+        multiplierChain, setMultiplierChain, openSettings, setOpenSettings,
+        setAutoMode, setSelected,
+        setDemoCoin, betAmount,
+        setRefreshTable,
+        refreshTable,
         setTotalEarnings,
-      selectMode,setCurrentBet,
-       setNumberOfBets,autoModeMultiWin,} = useContext(StateContext)
+        totalEarnings,
+        selectMode, setCurrentBet,
+        setNumberOfBets, autoModeMultiWin, } = useContext(StateContext)
 
     const isMobile = useIsMobileDevice();
     const earnings = betAmount * multiplierChain;
     const close = () => {
 
         setIsStart(false);
-        setSelected([]);
+        setSelected({});
         setGameOver(false);
-        setTotalEarnings((prev) => prev + earnings);
-        setDemoCoin((prev) => prev + earnings);
+        // setTotalEarnings((prev) => prev + earnings);
         setMultiplierChain(1);
-        setTotalEarnings(0);
+
         setOpenSettings(false);
         setAutoMode(false);
         setCurrentBet(0);
-        setNumberOfBets(0);
+        setNumberOfBets(0)
         setOpenSettings(!openSettings)
+        setRefreshTable(!refreshTable)
+        setTotalEarnings(0);
+        localStorage.removeItem('gameState');
+        localStorage.removeItem('AutoModeGameState');
+
     }
 
 
-    const placementSettings = isMobile ? "center" :"top"
+    const placementSettings = isMobile ? "center" : "top"
     return (
         <Modal
             size="xs"
@@ -45,7 +52,7 @@ const GameOverModal = () => {
                 {(close) => (
                     <>
                         <ModalHeader className="flex justify-center">
-                            <img src={dragon}  className={"w-32 h-32"} alt="dragon"/>
+                            <img src={dragon} className={"w-32 h-32"} alt="dragon" />
                         </ModalHeader>
                         <ModalBody>
                             <p className={"text-center text-xl text-red-600 font-bold"}>Game Over</p>
@@ -55,13 +62,13 @@ const GameOverModal = () => {
                                 </p>
                                 :
                                 <p className={"text-center text-2xl text-green-500 font-extrabold"}>
-                                    {Math.floor(earnings)}$
+                                    {Math.floor(totalEarnings)}$
                                 </p>
                             }
 
                         </ModalBody>
                         <ModalFooter>
-                            <Button color="danger" variant="light" onPress={close}>
+                            <Button color="danger" variant="light" onClick={close}>
                                 Close
                             </Button>
                         </ModalFooter>

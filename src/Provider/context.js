@@ -13,10 +13,13 @@ export const StateProvider = ({ children }) => {
         EASY: 'Easy',
         MEDIUM: 'Medium',
         HARD: 'Hard',
+        EXPERT: 'Expert',
+        MASTER: 'Master',
     });
+    const [timeLeft, setTimeLeft] = useState(30)
     const [selectedDifficultly, setSelectedDifficulty] = useState(gameDifficulty.EASY)
 
-    const [refreshTable , setRefreshTable] = useState(false)
+    const [refreshTable, setRefreshTable] = useState(false)
     const [multiplierChain, setMultiplierChain] = useState(1);
     const [autoMode, setAutoMode] = useState(false);
 
@@ -27,23 +30,114 @@ export const StateProvider = ({ children }) => {
     const rows = 9;
     const columns = 4;
     const [tableData, setTableData] = useState([]);
-    const [openSettings , setOpenSettings] = useState(true)
-    const [numberOfBetsError , setNumberOfBetsError] = useState(false)
-    const [autoModeMultiWin,setAutoModeMultiWin] = useState(0)
+    const [openSettings, setOpenSettings] = useState(true)
+    const [numberOfBetsError, setNumberOfBetsError] = useState(false)
+    const [autoModeMultiWin, setAutoModeMultiWin] = useState(0)
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    useEffect(() => {
+        if (isStart) {
+            let mc = parseFloat(multiplierChain.toFixed(2))
+            localStorage.setItem('gameState', JSON.stringify({
+                selected,
+                betAmount,
+                currentBet,
+                tableData,
+                demoCoin,
+                mc,
+                totalEarnings,
+                isStart,
+            }));
+        }
+    }, [selected, currentBet, tableData, multiplierChain, totalEarnings, betAmount, isStart]);
+
+    useEffect(() => {
+        const savedGameState = localStorage.getItem('gameState');
+        if (savedGameState) {
+            const { selected, currentBet, tableData, mc, totalEarnings, isStart, betAmount } = JSON.parse(savedGameState);
+            setSelected(selected);
+            setCurrentBet(currentBet);
+            setTableData(tableData);
+            setBetAmount(betAmount)
+            setMultiplierChain(mc)
+            setTotalEarnings(totalEarnings);
+            setIsStart(isStart || true);  // Oyun başlasın
+        }
+    }, []);
+
+
+
+
+    useEffect(() => {
+        const storedDemoCoin = localStorage.getItem('demoCoin');
+        const storedOpenSettings = localStorage.getItem('openSettings');
+        if (storedDemoCoin) {
+            setDemoCoin(parseInt(storedDemoCoin, 10));
+        }
+        else setDemoCoin(10000)
+
+        if (storedOpenSettings) {
+            const value = storedOpenSettings === "true" ? true : false
+            setOpenSettings(value)
+        }
+    }, []);
+    useEffect(() => {
+        localStorage.setItem('demoCoin', demoCoin);
+        localStorage.setItem('openSettings', openSettings);
+
+
+    }, [demoCoin, openSettings]);
+
+
+
+
+    useEffect(() => {
+        const savedAutoModeState = localStorage.getItem('AutoModeGameState');
+        if (savedAutoModeState) {
+            const {
+                autoMode,
+                currentBet,
+                numberOfBets,
+                tableData,
+                multiplierChain,
+                selected
+            } = JSON.parse(savedAutoModeState);
+
+            if (autoMode) {
+                setAutoMode(autoMode);
+                setCurrentBet(Number(currentBet));
+                setNumberOfBets(Number(numberOfBets));
+                setTableData(tableData);
+                setMultiplierChain(multiplierChain);
+                setSelected(selected);
+
+                // Eğer currentBet, numberOfBets'ten küçükse auto mode'u başlat
+                if (Number(currentBet) < Number(numberOfBets) && !gameOver) {
+                    playAutoMode(); // Auto mode tekrar başlasın
+                } else {
+                    endAutoModeGame(); // Oyun bitmişse auto mode sonlansın
+                }
+            }
+        }
+    }, []); // Komponent ilk kez yüklendiğinde çalışır
+
+
+
+
     const selectCol = async (rowIndex, colIndex, cell, multiplier) => {
         if (!isStart || isInvalidSelection(rowIndex)) return;
-
-        await updateSelected(rowIndex, colIndex);
-
-        if(rowIndex === tableData.length - 1)
-        {
-            setDemoCoin((prev) => prev - betAmount);
+        await updateSelected(rowIndex, colIndex); // Seçilen sütunu güncelle
+        if (rowIndex === tableData.length - 1) {
+            setDemoCoin((prev) => prev - betAmount); // Son satırdaysak demo paradan eksilt
         }
+
 
         if (cell === dragon) {
             await handleGameOver(rowIndex);
         } else {
-            updateMultiplierChain(multiplier);
+            const earnings = betAmount * multiplierChain;
+            setTotalEarnings((prev) => prev + earnings)
+            updateMultiplierChain(multiplier); // Multiplier'ı güncelle
 
             if (isFirstRow(rowIndex)) {
                 await handleFirstRowSelection();
@@ -51,7 +145,30 @@ export const StateProvider = ({ children }) => {
         }
     };
 
+    const playAutoMode = async () => {
+        for (let rowIndex = 0; rowIndex < tableData?.table?.length; rowIndex++) {
+            if (Number(currentBet) >= Number(numberOfBets)) {
+                console.log("currentBet", Number(currentBet))
+                console.log("numberOfBets", Number(numberOfBets))
+
+                endAutoModeGame();
+                break;
+            }
+
+            const columns = tableData.table[rowIndex].length;  // Satırdaki sütun sayısı
+            const colIndex = Math.floor(Math.random() * columns);  // Rastgele bir sütun seçilir
+            const selectedCell = tableData.table[rowIndex][colIndex];
+
+            // 1 saniye gecikmeli sütun seçimi yapılır
+            await selectCol(rowIndex, colIndex, selectedCell, tableData.multiplier);
+
+        }
+    };
+
     const isInvalidSelection = (rowIndex) => {
+        if (rowIndex === 8 && selectMode === "Manual") {
+            setDemoCoin((prev) => prev - betAmount)
+        }
         return (rowIndex !== 8 && selected[rowIndex + 1] === undefined) || selected[rowIndex];
     };
 
@@ -70,9 +187,12 @@ export const StateProvider = ({ children }) => {
     };
     const endManualGame = (rowIndex) => {
         const earnings = betAmount * multiplierChain;
+
+        setTotalEarnings((prev) => prev + earnings); // Kazancı totalEarnings'e ekle
         setGameOver(true);
         setDemoCoin((prev) => prev + earnings);
-        if(rowIndex === tableData.length - 1){
+
+        if (rowIndex === tableData.length - 1) {
             setMultiplierChain(0);
 
         }
@@ -81,7 +201,7 @@ export const StateProvider = ({ children }) => {
     const handleAutoMode = async () => {
         setCurrentBet((prevState) => prevState + 1);
 
-        if (currentBet < numberOfBets -1) {
+        if (currentBet < numberOfBets - 1) {
             await resetForNextAutoBet();
         } else {
             endAutoModeGame();
@@ -123,19 +243,20 @@ export const StateProvider = ({ children }) => {
             case "Easy":
                 return 5;
             case "Medium":
-                return 49;
+                return 20;
             case "High":
-                return 99;
+                return 49;
+            case "Expert":
+                return 60;
+            case "Master":
+                return 90;
             default:
                 return 1;
         }
     };
-    const playAutoMode = async()  => {
-            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
-                const colIndex = Math.floor(Math.random() * columns);
-                await selectCol(rowIndex, colIndex, tableData[rowIndex].row[colIndex], tableData[rowIndex].multiplier);
-            }
-    };
+
+
+
 
     const shuffleArray = (array) => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -146,56 +267,86 @@ export const StateProvider = ({ children }) => {
     };
 
 
-    const generateRandomRow = (columns, selectedDifficultly) => {
-        let numYumurtas, numDragons, multiplier;
-        switch (selectedDifficultly) {
+
+
+    const generateRandomRow = (selectedDifficulty) => {
+        let numYumurtas, numDragons, multiplier, rows = 9, columns; // Satır sayısı her zaman 9
+
+        switch (selectedDifficulty) {
             case gameDifficulty.EASY:
-                numYumurtas = Math.floor(columns * 0.75);
-                numDragons = columns - numYumurtas;
-                multiplier = 1.50;
+                columns = 4; // 9x4 matris
+                numYumurtas = 3;
+                numDragons = 1;
+                multiplier = 1.31;
                 break;
             case gameDifficulty.MEDIUM:
-                numYumurtas = Math.floor(columns / 2);
-                numDragons = columns - numYumurtas;
-                multiplier = 2.15;
+                columns = 3; // 9x3 matris
+                numYumurtas = 1;
+                numDragons = 2;
+                multiplier = 1.47;
                 break;
             case gameDifficulty.HARD:
-                numDragons = Math.floor(columns * 0.75);
-                numYumurtas = columns - numDragons;
-                multiplier = 3.0;
+                columns = 2; // 9x2 matris
+                numYumurtas = 1;
+                numDragons = 1;
+                multiplier = 1.96;
+                break;
+            case gameDifficulty.EXPERT:
+                columns = 3; // 9x3 matris
+                numYumurtas = 1;
+                numDragons = 2;
+                multiplier = 2.94;
+                break;
+            case gameDifficulty.MASTER:
+                columns = 4; // 9x4 matris
+                numYumurtas = 1;
+                numDragons = 3;
+                multiplier = 3.92;
                 break;
             default:
-                numYumurtas = Math.floor(columns / 2);
-                numDragons = columns - numYumurtas;
-                multiplier = 1;
+                columns = 4; // Varsayılan mod: 9x4 matris
+                numYumurtas = 3;
+                numDragons = 1;
+                multiplier = 1.31;
         }
 
-        const row = Array.from({ length: columns }, (_, i) => {
-            if (i < numYumurtas) {
-                return dragonEgg;
-            } else {
-                return dragon;
-            }
+        // Matrisin her satırı için:
+        const table = Array.from({ length: rows }, () => {
+            // Yumurtaları ve ejderhaları yerleştiriyoruz
+            const row = Array(numYumurtas).fill(dragonEgg).concat(Array(numDragons).fill(dragon));
+
+            // Sütun sayısını dolduruyoruz, sadece 2 veya 3 sütuna göre tamamlanıyor
+            const fullRow = row.concat(Array(columns - row.length).fill(null));
+
+            // Hücreleri karıştırıyoruz
+            return shuffleArray(fullRow);
         });
 
-        return { row: shuffleArray(row), multiplier };
+        // Tablo ve multiplier'ı birlikte döndürüyoruz
+        return { table, multiplier };
     };
+
+
+
+
+
+
     return (
         <StateContext.Provider value={{
             demoCoin, setDemoCoin, selectMode, setSelectMode, betAmount, setBetAmount, isStart, setIsStart, selectedDifficultly,
             setSelectedDifficulty,
-            gameDifficulty , setGameDifficulty,
+            gameDifficulty, setGameDifficulty,
             gameOver, setGameOver,
             totalEarnings, setTotalEarnings,
             multiplierChain, setMultiplierChain,
-            maxWinModal, setMaxWinModal,refreshTable , setRefreshTable
-           , playAutoMode,autoMode, setAutoMode,
-            tableData, setTableData,generateRandomRow,
+            maxWinModal, setMaxWinModal, refreshTable, setRefreshTable
+            , playAutoMode, autoMode, setAutoMode,
+            tableData, setTableData, generateRandomRow,
             numberOfBets, setNumberOfBets,
             currentBet, setCurrentBet,
-            selectCol,selected,setSelected,openSettings , setOpenSettings,
+            selectCol, selected, setSelected, openSettings, setOpenSettings,
             numberOfBetsError,
-            setNumberOfBetsError,autoModeMultiWin,setAutoModeMultiWin
+            setNumberOfBetsError, autoModeMultiWin, setAutoModeMultiWin
         }}>
             {children}
         </StateContext.Provider>

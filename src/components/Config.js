@@ -1,13 +1,15 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import AutoConfig from "./DragonTower/AutoConfig";
-import {StateContext} from "../Provider/context";
+import { StateContext } from "../Provider/context";
 import Settings from "./Settings/Settings";
 const MyComponent = () => {
     const mode = ["Manual", "Auto"]
-    const { demoCoin, selectMode, setSelectMode,setBetAmount } = useContext(StateContext)
-    const changeMode = (item)=>{
+    const { demoCoin, selectMode, setSelectMode, setRefreshTable, refreshTable, gameDifficulty, setBetAmount, setSelectedDifficulty } = useContext(StateContext)
+    const changeMode = (item) => {
         setBetAmount(0)
         setSelectMode(item)
+        setSelectedDifficulty(gameDifficulty.EASY)
+        setRefreshTable(!refreshTable)
     }
     return (
         <div className=' w-full  h-full bg-gray-600 p-2 flex flex-col gap-y-5'>
@@ -18,7 +20,7 @@ const MyComponent = () => {
                 ))}
             </div>
             {selectMode === "Manual" ?
-                <Settings/>
+                <Settings />
                 :
                 <AutoConfig />
             }
