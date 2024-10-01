@@ -15,13 +15,19 @@ Dragon Tower, oyuncuların bir ızgarada yumurtaları bulup ejderhalardan kaçı
 ### Çarpanlar
 
 - **Easy Mod:**
-  - Her adım çarpanı: 1.5x
+  - Her adım çarpanı: 1.31x
   - Maksimum kazanç: 5x
 - **Medium Mod:**
-  - Her adım çarpanı: 2.15x
-  - Maksimum kazanç: 49x
+  - Her adım çarpanı: 1.47x
+  - Maksimum kazanç: 20x
 - **Hard Mod:**
-  - Her adım çarpanı: 3x
+  - Her adım çarpanı: 1.96x
+  - Maksimum kazanç: 33x
+- **Expert Mod:**
+  - Her adım çarpanı: 2.94x
+  - Maksimum kazanç: 45x
+- **Master Mod:**
+  - Her adım çarpanı: 3.92x
   - Maksimum kazanç: 99x
 
 Oyuncu, ejderhaya rastlamadan tüm ızgarayı tamamlarsa, seçilen mod için maksimum kazancı elde eder.
