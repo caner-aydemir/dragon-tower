@@ -52,8 +52,10 @@ const MaxWinModal = () => {
                             <p className={"text-center text-3xl text-green-500 font-bold"}>Congratulations</p>
                             <p className={"text-center  text-2xl text-green-500 font-bold"}>Max Win
                                 {selectedDifficultly === "Easy" && <p className={"text-center text-2xl"}>5X</p>}
-                                {selectedDifficultly === "Medium" && <p className={"text-center text-2xl"}>49X</p>}
-                                {selectedDifficultly === "Hard" && <p className={"text-center text-2xl"}>99X</p>}
+                                {selectedDifficultly === "Medium" && <p className={"text-center text-2xl"}>20X</p>}
+                                {selectedDifficultly === "Hard" && <p className={"text-center text-2xl"}>33X</p>}
+                                {selectedDifficultly === "Expert" && <p className={"text-center text-2xl"}>45X</p>}
+                                {selectedDifficultly === "Master" && <p className={"text-center text-2xl"}>99X</p>}
                             </p>
 
                             {selectMode === "Auto" ?

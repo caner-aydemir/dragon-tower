@@ -288,9 +288,9 @@ export const StateProvider = ({ children }) => {
             case "Medium":
                 return 20;
             case "High":
-                return 49;
+                return 33;
             case "Expert":
-                return 60;
+                return 45;
             case "Master":
                 return 90;
             default:
