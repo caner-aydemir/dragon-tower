@@ -6,11 +6,18 @@ Dragon Tower, oyuncuların bir ızgarada yumurtaları bulup ejderhalardan kaçı
 
 ## Oyun Kuralları
 
-- Oyun ızgarası 9 satır ve 4 sütundan oluşur.
+- Oyun ızgarası seçilen modlara göre satır ve sütunlardan oluşur.
 - Izgaradaki her hücre rastgele dağıtılmış yumurta veya ejderha içerir.
 - Oyun iki modda oynanabilir: Manual ve Auto.
   - **Manual Mod:** Oyuncular her satırda bir sütun seçerek yumurtaları bulur. Bulunan her yumurta oyuncunun kazancını artırır. Eğer ejderha bulunursa oyun sona erer ve oyuncu o ana kadar biriktirdiği parayı kazanır.
   - **Auto Mod:** Oyun sütunları otomatik olarak seçerek ilerler.
+
+### Matrix
+- Easy Mod : 4x9      | 2 yumurta , 2 ejderha
+- Medium Mod : 3x9    | 2 yumurta , 1 ejderha
+- Hard Mod : 2x9      | 1 yumurta , 1 ejderha
+- Expert Mod : 3x9    | 1 yumurta , 2 ejderha
+- Master Mod : 4x9    | 1 yumurta , 3 ejderha
 
 ### Çarpanlar
 
