@@ -11,11 +11,10 @@ const AutoConfig = () => {
                 <p>Number of Bets</p>
                 <Input
                     type="number"
-                    value={numberOfBets}
                     isReadOnly={isStart}
                     isInvalid={numberOfBetsError}
                     errorMessage="Please enter a value greater than 1"
-                    onChange={(e) => setNumberOfBets(e.target.value)}
+                    onChange={(e) => setNumberOfBets(Number(e.target.value))}
                     placeholder="0"
                     variant='flat'
                     className='font-sans'

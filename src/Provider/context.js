@@ -33,6 +33,7 @@ export const StateProvider = ({ children }) => {
     const [openSettings, setOpenSettings] = useState(true)
     const [numberOfBetsError, setNumberOfBetsError] = useState(false)
     const [autoModeMultiWin, setAutoModeMultiWin] = useState(0)
+    const [row, setRow] = useState(0)
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     useEffect(() => {
@@ -41,7 +42,6 @@ export const StateProvider = ({ children }) => {
             localStorage.setItem('gameState', JSON.stringify({
                 selected,
                 betAmount,
-                currentBet,
                 tableData,
                 demoCoin,
                 mc,
@@ -49,14 +49,13 @@ export const StateProvider = ({ children }) => {
                 isStart,
             }));
         }
-    }, [selected, currentBet, tableData, multiplierChain, totalEarnings, betAmount, isStart]);
+    }, [selected, tableData, multiplierChain, totalEarnings, betAmount, isStart]);
 
     useEffect(() => {
         const savedGameState = localStorage.getItem('gameState');
         if (savedGameState) {
-            const { selected, currentBet, tableData, mc, totalEarnings, isStart, betAmount } = JSON.parse(savedGameState);
+            const { selected, tableData, mc, totalEarnings, isStart, betAmount } = JSON.parse(savedGameState);
             setSelected(selected);
-            setCurrentBet(currentBet);
             setTableData(tableData);
             setBetAmount(betAmount)
             setMultiplierChain(mc)
@@ -69,8 +68,18 @@ export const StateProvider = ({ children }) => {
 
 
     useEffect(() => {
+
         const storedDemoCoin = localStorage.getItem('demoCoin');
         const storedOpenSettings = localStorage.getItem('openSettings');
+        const storedRowIndex = localStorage.getItem("row")
+        const storedSelectMode = localStorage.getItem("selectMode")
+
+        if (storedSelectMode) {
+            setSelectMode(storedSelectMode)
+        }
+        if (storedRowIndex) {
+            setRow(Number(storedRowIndex))
+        }
         if (storedDemoCoin) {
             setDemoCoin(parseInt(storedDemoCoin, 10));
         }
@@ -84,44 +93,69 @@ export const StateProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('demoCoin', demoCoin);
         localStorage.setItem('openSettings', openSettings);
+        localStorage.setItem("selectMode", selectMode)
 
 
-    }, [demoCoin, openSettings]);
+    }, [demoCoin, openSettings, selectMode]);
 
+    useEffect(() => {
+        if (isStart && selectMode === "Auto") {
+            let mc = parseFloat(multiplierChain.toFixed(2))
+            localStorage.setItem('AutoModeGameState', JSON.stringify({
+                selected,
+                betAmount,
+                currentBet,
+                autoMode,
+                tableData,
+                demoCoin,
+                numberOfBets,
+                mc,
+                totalEarnings,
+                isStart,
 
+            }));
+        }
+    }, [selected,
+        numberOfBets,
+        tableData,
+        demoCoin,
+        currentBet,
+        multiplierChain,
+        totalEarnings,
+        isStart,
+        autoMode
+    ]);
 
 
     useEffect(() => {
         const savedAutoModeState = localStorage.getItem('AutoModeGameState');
         if (savedAutoModeState) {
+            setAutoMode(true)
             const {
                 autoMode,
+                tableData,
                 currentBet,
                 numberOfBets,
-                tableData,
-                multiplierChain,
+                mc,
                 selected
             } = JSON.parse(savedAutoModeState);
 
-            if (autoMode) {
-                setAutoMode(autoMode);
-                setCurrentBet(Number(currentBet));
-                setNumberOfBets(Number(numberOfBets));
-                setTableData(tableData);
-                setMultiplierChain(multiplierChain);
-                setSelected(selected);
 
-                // Eğer currentBet, numberOfBets'ten küçükse auto mode'u başlat
-                if (Number(currentBet) < Number(numberOfBets) && !gameOver) {
-                    playAutoMode(); // Auto mode tekrar başlasın
-                } else {
-                    endAutoModeGame(); // Oyun bitmişse auto mode sonlansın
-                }
+            setTableData(tableData);
+            setMultiplierChain(mc);
+            setSelected(selected);
+            setCurrentBet(Number(currentBet))
+            setNumberOfBets(Number(numberOfBets))
+            setAutoMode(true)
+            // Eğer currentBet, numberOfBets'ten küçükse auto mode'u başlat
+            if (Number(currentBet) < Number(numberOfBets)) {
+                // setIsStart(true);  // Oyunu başlatıyoruz
+                playAutoMode();  // Auto mode tekrar başlasın
+            } else {
+                endAutoModeGame();  // Oyun bitmişse auto mode sonlansın
             }
         }
-    }, []); // Komponent ilk kez yüklendiğinde çalışır
-
-
+    }, []);  // Komponent ilk kez yüklendiğinde çalışır
 
 
     const selectCol = async (rowIndex, colIndex, cell, multiplier) => {
@@ -130,7 +164,6 @@ export const StateProvider = ({ children }) => {
         if (rowIndex === tableData.length - 1) {
             setDemoCoin((prev) => prev - betAmount); // Son satırdaysak demo paradan eksilt
         }
-
 
         if (cell === dragon) {
             await handleGameOver(rowIndex);
@@ -145,12 +178,14 @@ export const StateProvider = ({ children }) => {
         }
     };
 
-    const playAutoMode = async () => {
-        for (let rowIndex = 0; rowIndex < tableData?.table?.length; rowIndex++) {
-            if (Number(currentBet) >= Number(numberOfBets)) {
-                console.log("currentBet", Number(currentBet))
-                console.log("numberOfBets", Number(numberOfBets))
 
+    const playAutoMode = async () => {
+        // rowIndex'i localStorage'dan aldığınız row değerinden başlatıyoruz
+        for (let rowIndex = 0; rowIndex < tableData?.table?.length; rowIndex++) {
+            await localStorage.setItem("row", rowIndex)
+            const getRow = await localStorage.getItem("row")
+            // Eğer mevcut bahis, toplam bahisten büyükse döngüyü durdur.
+            if (Number(currentBet) >= Number(numberOfBets)) {
                 endAutoModeGame();
                 break;
             }
@@ -162,6 +197,8 @@ export const StateProvider = ({ children }) => {
             // 1 saniye gecikmeli sütun seçimi yapılır
             await selectCol(rowIndex, colIndex, selectedCell, tableData.multiplier);
 
+            // Her seferinde row değerini hem localStorage'a hem state'e kaydediyoruz.
+            // State'i de güncelle
         }
     };
 
@@ -186,14 +223,17 @@ export const StateProvider = ({ children }) => {
         }
     };
     const endManualGame = (rowIndex) => {
-        const earnings = betAmount * multiplierChain;
-
+        let earnings;
+        if (rowIndex !== 8) earnings = betAmount * multiplierChain;
+        else earnings = 0
         setTotalEarnings((prev) => prev + earnings); // Kazancı totalEarnings'e ekle
-        setGameOver(true);
         setDemoCoin((prev) => prev + earnings);
+        setIsStart(false);
+        setSelected({});
+        setGameOver(true);
 
         if (rowIndex === tableData.length - 1) {
-            setMultiplierChain(0);
+            setMultiplierChain(1);
 
         }
     };
@@ -202,6 +242,7 @@ export const StateProvider = ({ children }) => {
         setCurrentBet((prevState) => prevState + 1);
 
         if (currentBet < numberOfBets - 1) {
+            setDemoCoin((prev) => prev - betAmount)
             await resetForNextAutoBet();
         } else {
             endAutoModeGame();
@@ -211,6 +252,7 @@ export const StateProvider = ({ children }) => {
     const resetForNextAutoBet = async () => {
         await setSelected({});
         setMultiplierChain(1);
+        setRow(0)
         const earnings = betAmount * multiplierChain;
         setAutoModeMultiWin((prevState) => prevState + earnings);
     };
@@ -236,6 +278,7 @@ export const StateProvider = ({ children }) => {
         const maxWinMultiplier = getMaxWinMultiplier();
         setAutoModeMultiWin(earnings * maxWinMultiplier);
         setDemoCoin((prev) => prev + earnings * maxWinMultiplier);
+        endManualGame()
     };
 
     const getMaxWinMultiplier = () => {

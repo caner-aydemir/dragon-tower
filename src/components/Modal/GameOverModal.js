@@ -24,9 +24,7 @@ const GameOverModal = () => {
         setIsStart(false);
         setSelected({});
         setGameOver(false);
-        // setTotalEarnings((prev) => prev + earnings);
         setMultiplierChain(1);
-
         setOpenSettings(false);
         setAutoMode(false);
         setCurrentBet(0);

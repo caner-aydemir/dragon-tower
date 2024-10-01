@@ -1,16 +1,16 @@
 import React, { useContext } from 'react'
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button} from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from "@nextui-org/react";
 import { StateContext } from '../../Provider/context';
 import { GiGlassCelebration } from "react-icons/gi";
 import useIsMobileDevice from "../../libs/responsive";
 
 
 const MaxWinModal = () => {
-    const {setIsStart ,
-        multiplierChain, setMultiplierChain,setOpenSettings,
-        openSettings, setSelected,setDemoCoin,betAmount,selectedDifficultly,
-       setTotalEarnings,maxWinModal,setMaxWinModal,
-        autoModeMultiWin,selectMode,setAutoMode,
+    const { setIsStart,
+        multiplierChain, setMultiplierChain, setOpenSettings,
+        openSettings, setSelected, setDemoCoin, betAmount, selectedDifficultly,
+        setTotalEarnings, maxWinModal, setMaxWinModal,
+        autoModeMultiWin, selectMode, setAutoMode,
         setCurrentBet,
         setNumberOfBets
     } = useContext(StateContext)
@@ -30,8 +30,10 @@ const MaxWinModal = () => {
         setCurrentBet(0);
         setNumberOfBets(0);
         setOpenSettings(!openSettings)
+        localStorage.removeItem('gameState');
+        localStorage.removeItem('AutoModeGameState');
     }
-    const placementSettings = isMobile ? "center" :"top"
+    const placementSettings = isMobile ? "center" : "top"
 
     return (
         <Modal
@@ -44,7 +46,7 @@ const MaxWinModal = () => {
                 {(close) => (
                     <>
                         <ModalHeader className="flex justify-center">
-                            <GiGlassCelebration className={"w-32 h-32 text-purple-700"}/>
+                            <GiGlassCelebration className={"w-32 h-32 text-purple-700"} />
                         </ModalHeader>
                         <ModalBody>
                             <p className={"text-center text-3xl text-green-500 font-bold"}>Congratulations</p>
